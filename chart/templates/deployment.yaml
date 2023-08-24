@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "segway-sys-source-ms-azure-eventhub.fullname" . }}
+  labels:
+    {{- include "segway-sys-source-ms-azure-eventhub.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "segway-sys-source-ms-azure-eventhub.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.git  }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "segway-sys-source-ms-azure-eventhub.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "segway-sys-source-ms-azure-eventhub.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+          - name: SYSLOG_ROUTER_SERVICE_NAME
+            value: {{ .Values.nexthop.name }}
+          - name: AZURE_STORAGE_CONN_STR
+            valueFrom:        
+              secretKeyRef:        
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: AZURE_STORAGE_CONN_STR
+          - name: AZURE_STORAGE_CONTAINER
+            valueFrom:        
+              secretKeyRef:        
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: AZURE_STORAGE_CONTAINER
+          - name: EVENT_HUB_CONN_STR
+            valueFrom:        
+              secretKeyRef:        
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: EVENT_HUB_CONN_STR
+          - name: EVENT_HUB_CONSUMER_GROUP
+            valueFrom:        
+              secretKeyRef:        
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: EVENT_HUB_CONSUMER_GROUP
+          - name: EVENT_HUB_TRANSPORT_TYPE
+            valueFrom:        
+              secretKeyRef:        
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: EVENT_HUB_TRANSPORT_TYPE
+                
+          - name: EVENT_HUB_STARTING_POSITION
+            value: {{ .Values.config.startingPostion | default "-1" | quote }}
+          - name: SEGWAY_SOURCE_VENDOR
+            value: {{ .Values.config.data.vendor }}
+          - name: SEGWAY_SOURCE_PRODUCT
+            value: {{ .Values.config.data.product }}
+          - name: SEGWAY_APP_PARSER
+            value:  {{ .Values.config.data.appparser }}
+          
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /var/lib/syslog-ng/
+            name: cache-volume          
+      volumes:
+      - name: cache-volume
+        emptyDir:
+          sizeLimit: 10Mi                 
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
