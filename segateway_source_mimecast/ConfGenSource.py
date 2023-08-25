@@ -21,7 +21,9 @@ except:
     pass
 
 from importlib import resources as impresources
+
 from segateway_source_mimecast import conf
+
 
 def _plugin_config_generator(args):
     inp_file = (impresources.files(conf) / 'source.conf')
