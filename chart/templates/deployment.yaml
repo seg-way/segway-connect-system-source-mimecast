@@ -40,41 +40,27 @@ spec:
           env:
           - name: SYSLOG_ROUTER_SERVICE_NAME
             value: {{ .Values.nexthop.name }}
-          - name: AZURE_STORAGE_CONN_STR
-            valueFrom:        
-              secretKeyRef:        
+          - name: MIMECAST_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
                 name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
-                key: AZURE_STORAGE_CONN_STR
-          - name: AZURE_STORAGE_CONTAINER
-            valueFrom:        
-              secretKeyRef:        
+                key: MIMECAST_CLIENT_ID
+          - name: MIMECAST_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
                 name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
-                key: AZURE_STORAGE_CONTAINER
-          - name: EVENT_HUB_CONN_STR
-            valueFrom:        
-              secretKeyRef:        
+                key: MIMECAST_CLIENT_SECRET
+          - name: MIMECAST_HOST
+            valueFrom:
+              secretKeyRef:
                 name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
-                key: EVENT_HUB_CONN_STR
-          - name: EVENT_HUB_CONSUMER_GROUP
-            valueFrom:        
-              secretKeyRef:        
+                key: MIMECAST_HOST
+          - name: MIMECAST_TYPE
+            valueFrom:
+              secretKeyRef:
                 name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
-                key: EVENT_HUB_CONSUMER_GROUP
-          - name: EVENT_HUB_TRANSPORT_TYPE
-            valueFrom:        
-              secretKeyRef:        
-                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
-                key: EVENT_HUB_TRANSPORT_TYPE
-                
-          - name: EVENT_HUB_STARTING_POSITION
-            value: {{ .Values.config.startingPostion | default "-1" | quote }}
-          - name: SEGWAY_SOURCE_VENDOR
-            value: {{ .Values.config.data.vendor }}
-          - name: SEGWAY_SOURCE_PRODUCT
-            value: {{ .Values.config.data.product }}
-          - name: SEGWAY_APP_PARSER
-            value:  {{ .Values.config.data.appparser }}
-          
+                key: MIMECAST_TYPE
+
           # livenessProbe:
           #   httpGet:
           #     path: /
@@ -87,11 +73,11 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
           - mountPath: /var/lib/syslog-ng/
-            name: cache-volume          
+            name: cache-volume
       volumes:
       - name: cache-volume
         emptyDir:
-          sizeLimit: 10Mi                 
+          sizeLimit: 10Mi
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
