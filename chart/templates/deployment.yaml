@@ -72,7 +72,12 @@ spec:
           volumeMounts:
           - mountPath: /var/lib/syslog-ng/
             name: cache-volume
+          - mountPath: /tmp
+            name: tmp
       volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 10Mi
       - name: cache-volume
         emptyDir:
           sizeLimit: 10Mi
