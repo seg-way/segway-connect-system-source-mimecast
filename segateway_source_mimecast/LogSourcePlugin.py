@@ -196,6 +196,9 @@ class LogSourcePlugin(LogSource):
         return response.json()
 
     @backoff.on_exception(backoff.expo, httpx.ReadTimeout, max_time=60, on_backoff=_backoff_handler)
+    @backoff.on_exception(
+        backoff.expo, httpx.HTTPStatusError, max_time=60, on_backoff=_backoff_handler
+    )
     async def get_next_batch(self, session, access_token, feed_type, nextPage):
         """Use the auth token to get a batch of urls to process"""
         request_furl = self._get_url(
