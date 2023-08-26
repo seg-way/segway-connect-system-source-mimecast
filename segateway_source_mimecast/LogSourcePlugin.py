@@ -14,43 +14,39 @@ import orjson
 import pytz
 from dotenv import load_dotenv
 from furl import furl
+from pythonjsonlogger import jsonlogger
 
 from segateway_source_mimecast._CleanEvent import CleanEvent
 
-try:
-    from syslogng import Logger
 
-    logger = Logger(__name__)
-except ImportError:
-    from pythonjsonlogger import jsonlogger
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        if not log_record.get("timestamp"):
+            # this doesn't use record.created, so it is slightly off
+            now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            log_record["timestamp"] = now
+        if log_record.get("level"):
+            log_record["level"] = log_record["level"].upper()
+        else:
+            log_record["level"] = record.levelname
 
-    class CustomJsonFormatter(jsonlogger.JsonFormatter):
-        def add_fields(self, log_record, record, message_dict):
-            super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
-            if not log_record.get("timestamp"):
-                # this doesn't use record.created, so it is slightly off
-                now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                log_record["timestamp"] = now
-            if log_record.get("level"):
-                log_record["level"] = log_record["level"].upper()
-            else:
-                log_record["level"] = record.levelname
+        log_record["threadName"] = record.threadName
+        log_record["lineno"] = record.lineno
+        log_record["module"] = record.module
+        log_record["exc_info"] = record.exc_info
+        log_record["exc_text"] = record.exc_text
 
-            log_record["threadName"] = record.threadName
-            log_record["lineno"] = record.lineno
-            log_record["module"] = record.module
-            log_record["exc_info"] = record.exc_info
-            log_record["exc_text"] = record.exc_text
 
-    # logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+# logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-    logHandler = logging.StreamHandler()
-    formatter = CustomJsonFormatter()
-    logHandler.setFormatter(formatter)
+logHandler = logging.StreamHandler()
+formatter = CustomJsonFormatter()
+logHandler.setFormatter(formatter)
 
-    logger.addHandler(logHandler)
+logger.addHandler(logHandler)
 
 load_dotenv()
 

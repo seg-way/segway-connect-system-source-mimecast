@@ -1,26 +1,21 @@
-try:
-    from syslogng import Logger
+from importlib import resources as impresources
+from logging import StreamHandler, getLogger
 
-    logger = Logger(__name__)
-except ImportError:
-    from logging import StreamHandler, getLogger
+from pythonjsonlogger import jsonlogger
 
-    logger = getLogger(__name__)
-    from pythonjsonlogger import jsonlogger
-
-    logHandler = StreamHandler()
-    formatter = jsonlogger.JsonFormatter()
-    logHandler.setFormatter(formatter)
-    logger.addHandler(logHandler)
+from segateway_source_mimecast import conf
 
 try:
     from syslogng import register_config_generator
 except ImportError:
     pass
 
-from importlib import resources as impresources
+logger = getLogger(__name__)
 
-from segateway_source_mimecast import conf
+logHandler = StreamHandler()
+formatter = jsonlogger.JsonFormatter()
+logHandler.setFormatter(formatter)
+logger.addHandler(logHandler)
 
 
 def _plugin_config_generator(args):
