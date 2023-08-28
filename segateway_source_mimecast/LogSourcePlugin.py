@@ -13,6 +13,7 @@ import httpx
 import orjson
 import pytz
 from dotenv import load_dotenv
+from flatdict import FlatDict
 from furl import furl
 from pythonjsonlogger import jsonlogger
 
@@ -40,7 +41,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 # logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 logHandler = logging.StreamHandler()
 formatter = CustomJsonFormatter()
@@ -252,9 +253,13 @@ class LogSourcePlugin(LogSource):
 
                     if syslogng:
                         message = orjson.dumps(data)
-                        record_lmsg = LogMessage(message)
-                        record_lmsg.set_timestamp(event_time)
-                        self.post_message(record_lmsg)
+                        single_event = LogMessage(message)
+                        single_event.set_timestamp(event_time)
+                        for field_key, field_value in FlatDict(data, delimiter=".").items():
+                            if not field_key.startswith("_"):
+                                single_event[f".Vendor.{field_key}"] = field_value
+                        # record_lmsg.update(FlatDict(data, delimiter='.'))
+                        self.post_message(single_event)
             logger.info(f"Completed {count} from {filename}")
 
 
