@@ -71,14 +71,14 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
           - mountPath: /var/lib/syslog-ng/
-            name: cache-volume
+            name: state-volume
           - mountPath: /tmp
             name: tmp
       volumes:
       - name: tmp
         emptyDir:
           sizeLimit: 10Mi
-      - name: st-volume
+      - name: state-volume
         emptyDir:
           sizeLimit: 10Mi
       {{- with .Values.nodeSelector }}
