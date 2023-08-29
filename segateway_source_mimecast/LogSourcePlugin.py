@@ -202,7 +202,7 @@ class LogSourcePlugin(LogSource):
             path="v1/siem/batch/events/cg",
             args={
                 "pageSize": "100",
-                "type": feed_type,
+                "type": feed_type.replace("-", " "),
             },
         )
 
