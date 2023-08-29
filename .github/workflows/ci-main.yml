@@ -47,7 +47,7 @@ jobs:
         id: version
         uses: cycjimmy/semantic-release-action@v3.4.2
         with:
-          # semantic_version: 19
+          semantic_version: 20
           extra_plugins: |
             @semantic-release/exec
             @semantic-release/git
@@ -142,7 +142,7 @@ jobs:
         id: version
         uses: cycjimmy/semantic-release-action@v3.4.2
         with:
-          # semantic_version: 19
+          semantic_version: 21
           extra_plugins: |
             @semantic-release/exec
             @semantic-release/git
