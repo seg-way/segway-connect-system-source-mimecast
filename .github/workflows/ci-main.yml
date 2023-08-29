@@ -47,7 +47,7 @@ jobs:
         id: version
         uses: cycjimmy/semantic-release-action@v3.4.2
         with:
-          semantic_version: 20
+          semantic_version: 19.0.5
           extra_plugins: |
             @semantic-release/commit-analyzer@9.0.2
             @semantic-release/release-notes-generator@10.0.3
@@ -146,7 +146,7 @@ jobs:
         id: version
         uses: cycjimmy/semantic-release-action@v3.4.2
         with:
-          semantic_version: 21
+          semantic_version: 19.0.5
           extra_plugins: |
             @semantic-release/commit-analyzer@9.0.2
             @semantic-release/release-notes-generator@10.0.3
