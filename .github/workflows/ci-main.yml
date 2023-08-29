@@ -51,7 +51,7 @@ jobs:
           extra_plugins: |
             @semantic-release/exec
             @semantic-release/git
-            conventional-changelog-conventionalcommits
+            conventional-changelog-conventionalcommits@6.1.0
           dry_run: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -146,7 +146,7 @@ jobs:
           extra_plugins: |
             @semantic-release/exec
             @semantic-release/git
-            conventional-changelog-conventionalcommits
+            conventional-changelog-conventionalcommits@6.1.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SEGWAY_CHARTS_WRITE: ${{ secrets.SEGWAY_CHARTS_WRITE }} 
