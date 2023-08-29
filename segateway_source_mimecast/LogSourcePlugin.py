@@ -256,9 +256,7 @@ class LogSourcePlugin(LogSource):
                         single_event = LogMessage(message)
                         single_event.set_timestamp(event_time)
                         for field_key, field_value in FlatDict(data, delimiter=".").items():
-                            if not field_key.startswith(".Vendor._") and field_key not in (
-                                ".Vendor.timestamp"
-                            ):
+                            if not field_key.startswith("_") and field_key not in ("timestamp"):
                                 single_event[f".Vendor.{field_key}"] = field_value
                         # record_lmsg.update(FlatDict(data, delimiter='.'))
                         self.post_message(single_event)
