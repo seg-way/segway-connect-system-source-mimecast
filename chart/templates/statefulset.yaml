@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "segway-sys-source-ms-azure-eventhub.fullname" . }}
+  labels:
+    {{- include "segway-sys-source-ms-azure-eventhub.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "segway-sys-source-ms-azure-eventhub.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.git  }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "segway-sys-source-ms-azure-eventhub.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "segway-sys-source-ms-azure-eventhub.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+          - name: SYSLOG_ROUTER_SERVICE_NAME
+            value: {{ .Values.nexthop.name }}
+          - name: MIMECAST_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: MIMECAST_CLIENT_ID
+          - name: MIMECAST_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: MIMECAST_CLIENT_SECRET
+          - name: MIMECAST_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: MIMECAST_HOST
+          - name: MIMECAST_TYPE
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "segway-sys-source-ms-azure-eventhub.secretname" . }}
+                key: MIMECAST_TYPE
+
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /var/lib/syslog-ng/
+            name: state-volume
+          - mountPath: /tmp
+            name: tmp
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 10Mi
+      - name: state-volume
+        emptyDir:
+          sizeLimit: 10Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: state
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.storage.storageClassName }}
+      storageClassName: {{ .Values.storage.storageClassName }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.storage.resources.requests.storage }}
