@@ -201,13 +201,15 @@ class LogSourcePlugin(LogSource):
         request_furl = self._get_url(
             path="v1/siem/batch/events/cg",
             args={
-                "pageSize": "100",
                 "type": feed_type.replace("-", " "),
+                "pageSize": "100",
             },
         )
 
         if nextPage:
             request_furl.args["nextLink"] = nextPage
+            sorted_args = dict(sorted(request_furl.args.items()))
+            request_furl.args = sorted_args
 
         requestHeaders = {
             "Authorization": f"Bearer {access_token['access_token']}",
@@ -215,7 +217,7 @@ class LogSourcePlugin(LogSource):
             "Accept-Encoding": "br;q=1.0, gzip;q=0.8, deflate;q=0.1",
         }
         response = await session.get(request_furl.url, headers=requestHeaders)
-        response.raise_for_status()
+        # response.raise_for_status()
 
         # logger.debug(response.json())
         return response.json()
