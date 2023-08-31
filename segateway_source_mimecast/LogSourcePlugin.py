@@ -220,7 +220,7 @@ class LogSourcePlugin(LogSource):
             response = await session.get(request_furl.url, headers=requestHeaders)
             response.raise_for_status()
         except httpx.HTTPError as exc:
-            logger.debug(f"HTTP Exception for {exc.request.url} - {exc.response.headers}- {exc}")
+            logger.error(f"HTTP Exception for {exc.request.url} - {exc.response.headers}- {exc}")
             raise exc
 
         return response
