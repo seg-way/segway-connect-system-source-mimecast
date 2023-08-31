@@ -151,13 +151,13 @@ class LogSourcePlugin(LogSource):
                         await asyncio.gather(*tasks)
                     elif nextPage == thisPage and thisPage:
                         logger.info("sleeping page did not move")
-                        time.sleep(60)
+                        time.sleep(300)
 
                     if syslogng:
                         self.persist["nextPage"] = nextPage
                 else:
                     logger.warning(f"sleeping no data on page {batch_list}")
-                    time.sleep(60)
+                    time.sleep(300)
 
     def _get_url(self, path=None, args=None):
         return furl().set(
@@ -216,11 +216,14 @@ class LogSourcePlugin(LogSource):
             "Accept": "application/json",
             "Accept-Encoding": "br;q=1.0, gzip;q=0.8, deflate;q=0.1",
         }
-        response = await session.get(request_furl.url, headers=requestHeaders)
-        # response.raise_for_status()
+        try:
+            response = await session.get(request_furl.url, headers=requestHeaders)
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            logger.debug(f"HTTP Exception for {exc.request.url} - {exc.response.headers}- {exc}")
+            raise exc
 
-        # logger.debug(response.json())
-        return response.json()
+        return response
 
     @backoff.on_exception(backoff.expo, httpx.ReadTimeout, max_time=60, on_backoff=_backoff_handler)
     async def batch_to_events(self, session, link):
