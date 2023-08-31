@@ -137,7 +137,7 @@ class LogSourcePlugin(LogSource):
                 # pointing to amazon s3 object in form of json.gz files
                 batch_list = await self.get_next_batch(session, token, self._TYPE, nextPage)
 
-                if "@nextPage" in batch_list:
+                if "@nextPage" in batch_list.json():
                     nextPage = batch_list["@nextPage"]
 
                     if (
@@ -220,7 +220,10 @@ class LogSourcePlugin(LogSource):
             response = await session.get(request_furl.url, headers=requestHeaders)
             response.raise_for_status()
         except httpx.HTTPError as exc:
-            logger.error(f"HTTP Exception for {exc.request.url} - {exc.response.headers}- {exc}")
+            logger.error(
+                f"HTTP Exception for {exc.request.url} - {exc.response.headers} -"
+                f" {exc.response.text} - {exc}"
+            )
             raise exc
 
         return response
